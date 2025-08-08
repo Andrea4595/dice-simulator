@@ -1,13 +1,119 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>주사위 시뮬레이터</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>옵시디언 프로토콜 - 관통 확률 계산기</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <div id="app"></div>
-  <script src="script.js"></script>
+<body class="dark">
+  <div class="container">
+    <header>
+      <h1>옵시디언 프로토콜 — 관통 확률 계산기</h1>
+      <div class="controls-row">
+        <label class="toggle">
+          <input id="darkToggle" type="checkbox" checked>
+          <span>다크모드</span>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>공격자 설정</h2>
+        <label>공격자 스탠스
+          <select id="attackStance">
+            <option value="attack">공격 스탠스</option>
+            <option value="other">그 외</option>
+          </select>
+        </label>
+
+        <label>강공 주사위 개수: <span id="strongCountLabel">2</span>
+          <input id="strongCount" type="range" min="0" max="6" value="2">
+        </label>
+
+        <label>약공 주사위 개수: <span id="weakCountLabel">2</span>
+          <input id="weakCount" type="range" min="0" max="10" value="2">
+        </label>
+
+        <div class="subrow">
+          <label>약공 - 눈 교체
+            <select id="weakEyeReplace">
+              <option value="none">안 함</option>
+              <option value="weak">약공</option>
+              <option value="strong">강공</option>
+            </select>
+          </label>
+
+          <label>약공 - 번개 교체
+            <select id="weakBoltReplace">
+              <option value="none">안 함</option>
+              <option value="strong">강공</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>방어자 설정</h2>
+        <label>방어자 스탠스
+          <select id="defenseStance">
+            <option value="defense">방어 스탠스</option>
+            <option value="other">그 외</option>
+          </select>
+        </label>
+
+        <label>방어 주사위 개수: <span id="blockCountLabel">2</span>
+          <input id="blockCount" type="range" min="0" max="12" value="2">
+        </label>
+
+        <label>회피 주사위 개수: <span id="dodgeCountLabel">2</span>
+          <input id="dodgeCount" type="range" min="0" max="10" value="2">
+        </label>
+
+        <div class="subrow">
+          <label>방어 - 번개 교체
+            <select id="blockBoltReplace">
+              <option value="none">안 함</option>
+              <option value="block">방어</option>
+            </select>
+          </label>
+
+          <label>회피 - 눈 교체
+            <select id="dodgeEyeReplace">
+              <option value="none">안 함</option>
+              <option value="dodge">회피</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>시뮬레이션</h2>
+        <p>시행 횟수: <strong id="runsLabel">1,000,000</strong></p>
+        <div class="buttons-row">
+          <button id="runBtn">시뮬레이션 실행 (1,000,000회)</button>
+          <button id="cancelBtn" disabled>취소</button>
+        </div>
+
+        <div class="progress">
+          <div id="progressBar" class="bar"><div id="progressFill" class="fill" style="width:0%"></div></div>
+          <div id="progressText">진행률: 0%</div>
+        </div>
+
+        <div class="result">
+          <h3>결과</h3>
+          <div id="resultText">아직 실행되지 않았습니다.</div>
+        </div>
+      </section>
+
+      <footer class="card small">
+        <p>작성: ChatGPT — 옵시디언 주사위 규칙 기반 시뮬레이터</p>
+        <p>설치: 깃허브 페이지에 업로드하면 모바일에서 바로 사용 가능합니다.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="main.js"></script>
 </body>
 </html>

@@ -1,26 +1,32 @@
-body {
-  background-color: #121212;
-  color: white;
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
+:root{
+  --bg:#0b0b0d;
+  --card:#0f1720;
+  --muted:#9ca3af;
+  --accent:#7c3aed;
+  --accent-2:#4f46e5;
+  --text:#e6eef8;
 }
-
-.container {
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
-}
-
-button {
-  background-color: #4f46e5;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #4338ca;
-}
+body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+.container{max-width:920px;margin:18px auto;padding:16px;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+h1{font-size:20px;margin:6px 0;}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:10px;margin-bottom:14px;}
+.small{font-size:13px;opacity:0.9;}
+label{display:block;margin:8px 0;font-size:14px;}
+input[type=range]{width:100%;margin-top:6px;}
+select{width:100%;margin-top:6px;padding:6px;border-radius:6px;background:#0b1220;color:var(--text);border:1px solid rgba(255,255,255,0.04);}
+.subrow{display:flex;gap:12px;}
+.subrow label{flex:1;}
+.controls-row{display:flex;gap:12px;align-items:center;}
+.toggle{display:flex;align-items:center;gap:8px;}
+.buttons-row{display:flex;gap:8px;margin-top:8px;}
+button{padding:10px 12px;border-radius:8px;border:0;background:var(--accent-2);color:white;font-weight:600;cursor:pointer;}
+button[disabled]{opacity:0.5;cursor:not-allowed;}
+.progress{margin-top:10px;}
+.bar{height:12px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden;}
+.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%;transition:width .2s;}
+.result{margin-top:12px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.03);}
+small{color:var(--muted);}
+@media(max-width:640px){.subrow{flex-direction:column;}}
+/* light theme when body not dark */
+body:not(.dark){--bg:#f7fafc;--card:#ffffff;--muted:#475569;--accent:#6d28d9;--accent-2:#4f46e5;--text:#0b1220;}
