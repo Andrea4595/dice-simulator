@@ -1,107 +1,230 @@
-// main.js - UI interactions and worker management
-const strongCountEl = document.getElementById('strongCount');
-const weakCountEl = document.getElementById('weakCount');
-const blockCountEl = document.getElementById('blockCount');
-const dodgeCountEl = document.getElementById('dodgeCount');
 
-const strongCountLabel = document.getElementById('strongCountLabel');
-const weakCountLabel = document.getElementById('weakCountLabel');
-const blockCountLabel = document.getElementById('blockCountLabel');
-const dodgeCountLabel = document.getElementById('dodgeCountLabel');
+const emojiMap = {
+  strong: "red",
+  weak: "yellow",
+  block: "white",
+  dodge: "blue"
+};
+const maxMap = {
+  strong: 6,
+  weak: 10,
+  block: 12,
+  dodge: 10
+};
+const state = {
+  strong: 0,
+  weak: 0,
+  block: 0,
+  dodge: 0
+};
 
-const attackStanceEl = document.getElementById('attackStance');
-const defenseStanceEl = document.getElementById('defenseStance');
+let isDragging = false;
+let dragType = null;
 
-const weakEyeReplace = document.getElementById('weakEyeReplace');
-const weakBoltReplace = document.getElementById('weakBoltReplace');
-const blockBoltReplace = document.getElementById('blockBoltReplace');
-const dodgeEyeReplace = document.getElementById('dodgeEyeReplace');
+function renderDiceRow(type) {
+  const container = document.getElementById(type + "Display");
+  const counter = document.getElementById(type + "Count");
+  container.innerHTML = "";
+  counter.textContent = `${state[type]}`;
 
-const runBtn = document.getElementById('runBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-const resultText = document.getElementById('resultText');
-const runsLabel = document.getElementById('runsLabel');
-const darkToggle = document.getElementById('darkToggle');
+  for (let i = 0; i < maxMap[type]; i++) {
+    const div = document.createElement("div");
+    const filled = i < state[type];
+    div.className = "dice";
+    div.style.backgroundImage = `url('./img/dice_${filled ? emojiMap[type] : "empty"}.png')`;
+    div.dataset.index = i;
+    div.dataset.type = type;
 
-const RUNS = 1000000; // 1,000,000 as requested
+    div.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      dragType = type;
+      state[type] = i + 1;
+      renderDiceRow(type);
+    });
 
-strongCountEl.addEventListener('input', ()=> strongCountLabel.textContent = strongCountEl.value);
-weakCountEl.addEventListener('input', ()=> weakCountLabel.textContent = weakCountEl.value);
-blockCountEl.addEventListener('input', ()=> blockCountLabel.textContent = blockCountEl.value);
-dodgeCountEl.addEventListener('input', ()=> dodgeCountLabel.textContent = dodgeCountEl.value);
+    div.addEventListener("mouseover", () => {
+      if (isDragging && dragType === type) {
+        state[type] = i + 1;
+        renderDiceRow(type);
+      }
+    });
 
-darkToggle.addEventListener('change', ()=> {
-  if(darkToggle.checked) document.body.classList.add('dark');
-  else document.body.classList.remove('dark');
-});
+    div.addEventListener("click", () => {
+      if (i + 1 === state[type]) {
+        state[type] = 0;
+      } else {
+        state[type] = i + 1;
+      }
+      renderDiceRow(type);
+    });
 
-runsLabel.textContent = RUNS.toLocaleString();
+    container.appendChild(div);
+  }
 
-let worker = null;
-runBtn.addEventListener('click', ()=>{
-  // disable UI
-  runBtn.disabled = true;
-  cancelBtn.disabled = false;
-  resultText.textContent = '시뮬레이션 실행 중... (브라우저가 느려질 수 있음)';
-  progressFill.style.width = '0%';
-  progressText.textContent = '진행률: 0%';
-  resultText.scrollIntoView({behavior:'smooth', block:'center'});
+  updateSimulation();
+}
 
-  // prepare parameters
-  const params = {
-    strongCount: Number(strongCountEl.value),
-    weakCount: Number(weakCountEl.value),
-    blockCount: Number(blockCountEl.value),
-    dodgeCount: Number(dodgeCountEl.value),
-    attackStance: attackStanceEl.value,
-    defenseStance: defenseStanceEl.value,
-    weakEyeReplace: weakEyeReplace.value, // none / weak / strong
-    weakBoltReplace: weakBoltReplace.value, // none / strong
-    blockBoltReplace: blockBoltReplace.value, // none / block
-    dodgeEyeReplace: dodgeEyeReplace.value, // none / dodge
-    runs: RUNS
-  };
-
-  worker = new Worker('worker.js');
-  worker.postMessage(params);
-
-  worker.onmessage = (ev) => {
-    const msg = ev.data;
-    if(msg.type === 'progress'){
-      progressFill.style.width = msg.progress + '%';
-      progressText.textContent = '진행률: ' + msg.progress.toFixed(1) + '%';
-    } else if(msg.type === 'result'){
-      const pct = msg.penetrationRate;
-      progressFill.style.width = '100%';
-      progressText.textContent = '진행률: 100%';
-      resultText.innerHTML = `<strong>관통 확률:</strong> ${pct.toFixed(4)} %`;
-      runBtn.disabled = false;
-      cancelBtn.disabled = true;
-      worker.terminate();
-      worker = null;
-    } else if(msg.type === 'cancelled'){
-      resultText.textContent = '시뮬레이션 취소됨.';
-      runBtn.disabled = false;
-      cancelBtn.disabled = true;
-      worker.terminate();
-      worker = null;
+document.addEventListener("mousemove", (e) => {
+  if (isDragging && dragType) {
+    const container = document.getElementById(dragType + "Display");
+    const rect = container.getBoundingClientRect();
+    const buffer = 18;
+    if (e.clientX < rect.left + buffer) {
+      if (state[dragType] !== 0) {
+        state[dragType] = 0;
+        renderDiceRow(dragType);
+      }
     }
-  };
-
-  worker.onerror = (err) => {
-    resultText.textContent = '작업 중 오류가 발생했습니다: ' + err.message;
-    runBtn.disabled = false;
-    cancelBtn.disabled = true;
-    worker.terminate();
-    worker = null;
-  };
-});
-
-cancelBtn.addEventListener('click', ()=>{
-  if(worker){
-    worker.postMessage({type:'cancel'});
-    cancelBtn.disabled = true;
   }
 });
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+  dragType = null;
+});
+
+["strong", "weak", "block", "dodge"].forEach(renderDiceRow);
+
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('active');
+    updateSimulation();
+  });
+});
+
+function updateSimulation() {
+  const opts = {
+    strongCount: state.strong,
+    weakCount: state.weak,
+    blockCount: state.block,
+    dodgeCount: state.dodge,
+    stanceAttack: document.querySelector('#attackOptions [data-opt="stance"]')?.classList.contains('active'),
+    boltToStrong: document.querySelector('[data-opt="boltToStrong"]')?.classList.contains('active'),
+    eyeToStrong: document.querySelector('[data-opt="eyeToStrong"]')?.classList.contains('active'),
+    eyeToWeak: document.querySelector('[data-opt="eyeToWeak"]')?.classList.contains('active'),
+    stanceDefense: document.querySelector('#defenseOptions [data-opt="stance"]')?.classList.contains('active'),
+    boltToBlock: document.querySelector('[data-opt="boltToBlock"]')?.classList.contains('active'),
+    eyeToDodge: document.querySelector('[data-opt="eyeToDodge"]')?.classList.contains('active'),
+  };
+
+  document.getElementById('resultText').textContent = "시뮬레이션 중...";
+  setTimeout(() => {
+    const result = simulate(opts);
+    document.getElementById('resultText').textContent = `관통 확률: ${result}%`;
+  }, 20);
+}
+
+// Simulate function stays the same as previous accurate version
+
+function rollDice(sides) {
+  const i = Math.floor(Math.random() * sides.length);
+  return sides[i];
+}
+
+function simulate(opts) {
+  const iterations = 100000;
+  let penetrated = 0;
+
+  const strongDice = ["강공", "강공", "강공", "강공", "빈 강공", "빈 약공", "눈", "번개"];
+  const weakDice = ["약공", "약공", "쌍 약공", "쌍 약공", "빈 약공", "눈", "번개", "빈 칸"];
+  const blockDice = ["회피", "방어", "빈 쌍 방어", "빈 쌍 방어", "눈", "번개", "번개", "빈 칸"];
+  const dodgeDice = ["회피", "회피", "눈", "눈", "번개", "빈 칸", "빈 칸", "빈 칸"];
+
+  for (let t = 0; t < iterations; t++) {
+    let atkHits = [];
+
+    // Strong dice
+    for (let i = 0; i < opts.strongCount; i++) {
+      let face = rollDice(strongDice);
+
+      if (opts.stanceAttack) {
+        if (face === "빈 강공") face = "강공";
+        if (face === "빈 약공") face = "약공";
+      }
+
+      if (face === "번개" && opts.boltToStrong) face = "강공";
+      if (face === "눈") {
+        if (opts.eyeToStrong) face = "강공";
+        else if (opts.eyeToWeak) face = "약공";
+      }
+
+      if (face === "강공") atkHits.push("강공");
+      if (face === "약공") atkHits.push("약공");
+    }
+
+    // Weak dice
+    for (let i = 0; i < opts.weakCount; i++) {
+      let face = rollDice(weakDice);
+
+      if (opts.stanceAttack && face === "빈 약공") face = "약공";
+      if (face === "번개" && opts.boltToStrong) face = "강공";
+      if (face === "눈") {
+        if (opts.eyeToStrong) face = "강공";
+        else if (opts.eyeToWeak) face = "약공";
+      }
+
+      if (face === "약공") atkHits.push("약공");
+      if (face === "쌍 약공") {
+        atkHits.push("약공");
+        atkHits.push("약공");
+      }
+      if (face === "강공") atkHits.push("강공");
+    }
+
+    let defBlocks = [];
+
+    // Block dice
+    for (let i = 0; i < opts.blockCount; i++) {
+      let face = rollDice(blockDice);
+
+      if (opts.stanceDefense && face === "빈 쌍 방어") face = "쌍 방어";
+      if (face === "번개" && opts.boltToBlock) face = "방어";
+      //if (face === "눈" && opts.eyeToDodge) face = "회피";
+
+      if (face === "방어") defBlocks.push("방어");
+      if (face === "회피") defBlocks.push("회피");
+      if (face === "쌍 방어") {
+        defBlocks.push("방어");
+        defBlocks.push("방어");
+      }
+    }
+
+    // Dodge dice
+    for (let i = 0; i < opts.dodgeCount; i++) {
+      let face = rollDice(dodgeDice);
+
+      if (face === "눈" && opts.eyeToDodge) face = "회피";
+      if (face === "번개" && opts.boltToBlock) face = "방어";
+
+      if (face === "회피") defBlocks.push("회피");
+    }
+
+    // Match attacks to blocks
+    let blocksUsed = new Array(defBlocks.length).fill(false);
+    let blockedCount = 0;
+
+    atkHitsLoop:
+    for (let hit of atkHits) {
+      for (let i = 0; i < defBlocks.length; i++) {
+        if (blocksUsed[i]) continue;
+
+        if (hit === "강공" && defBlocks[i] === "회피") {
+          blocksUsed[i] = true;
+          blockedCount++;
+          continue atkHitsLoop;
+        }
+        if (hit === "약공" && (defBlocks[i] === "회피" || defBlocks[i] === "방어")) {
+          blocksUsed[i] = true;
+          blockedCount++;
+          continue atkHitsLoop;
+        }
+      }
+    }
+
+    if (blockedCount < atkHits.length) {
+      penetrated++;
+    }
+  }
+
+  return Math.round((penetrated / iterations) * 100);
+}
