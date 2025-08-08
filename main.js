@@ -41,12 +41,6 @@ function renderDiceRow(type) {
       state[type] = i + 1;
       renderDiceRow(type);
     });
-    div.addEventListener("touchstart", (e) => {
-      isDragging = true;
-      dragType = type;
-      state[type] = i + 1;
-      renderDiceRow(type);
-    });
 
     div.addEventListener("mouseover", () => {
       if (isDragging && dragType === type) {
@@ -54,27 +48,8 @@ function renderDiceRow(type) {
         renderDiceRow(type);
       }
     });
-    div.addEventListener("touchmove", (e) => {
-      if (isDragging && dragType === type) {
-        const touch = e.touches[0];
-        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (element && element.dataset && element.dataset.index !== undefined && element.dataset.type === type) {
-          const newIndex = parseInt(element.dataset.index);
-          state[type] = newIndex + 1;
-          renderDiceRow(type);
-        }
-      }
-    });
 
     div.addEventListener("click", () => {
-      if (i + 1 === state[type]) {
-        state[type] = 0;
-      } else {
-        state[type] = i + 1;
-      }
-      renderDiceRow(type);
-    });
-    div.addEventListener("touchend", () => {
       if (i + 1 === state[type]) {
         state[type] = 0;
       } else {
@@ -107,6 +82,31 @@ document.addEventListener("mouseup", () => {
   isDragging = false;
   dragType = null;
 });
+document.addEventListener("touchend", () => {
+  isDragging = false;
+  dragType = null;
+});
+document.addEventListener("touchmove", (e) => {
+  if (isDragging && dragType) {
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element && element.dataset && element.dataset.index !== undefined && element.dataset.type === dragType) {
+      const newIndex = parseInt(element.dataset.index);
+      if (newIndex + 1 !== state[dragType]) {
+        state[dragType] = newIndex + 1;
+        renderDiceRow(dragType);
+      }
+    } else {
+      const container = document.getElementById(dragType + "Display");
+      const rect = container.getBoundingClientRect();
+      const buffer = 18;
+      if (touch.clientX < rect.left + buffer && state[dragType] !== 0) {
+        state[dragType] = 0;
+        renderDiceRow(dragType);
+      }
+    }
+  }
+}, { passive: false });
 
 ["strong", "weak", "block", "dodge"].forEach(renderDiceRow);
 
