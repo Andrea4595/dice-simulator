@@ -41,6 +41,12 @@ function renderDiceRow(type) {
       state[type] = i + 1;
       renderDiceRow(type);
     });
+    div.addEventListener("touchstart", (e) => {
+      isDragging = true;
+      dragType = type;
+      state[type] = i + 1;
+      renderDiceRow(type);
+    });
 
     div.addEventListener("mouseover", () => {
       if (isDragging && dragType === type) {
@@ -48,8 +54,27 @@ function renderDiceRow(type) {
         renderDiceRow(type);
       }
     });
+    div.addEventListener("touchmove", (e) => {
+      if (isDragging && dragType === type) {
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (element && element.dataset && element.dataset.index !== undefined && element.dataset.type === type) {
+          const newIndex = parseInt(element.dataset.index);
+          state[type] = newIndex + 1;
+          renderDiceRow(type);
+        }
+      }
+    });
 
     div.addEventListener("click", () => {
+      if (i + 1 === state[type]) {
+        state[type] = 0;
+      } else {
+        state[type] = i + 1;
+      }
+      renderDiceRow(type);
+    });
+    div.addEventListener("touchend", () => {
       if (i + 1 === state[type]) {
         state[type] = 0;
       } else {
@@ -122,7 +147,7 @@ function rollDice(sides) {
 }
 
 function simulate(opts) {
-  const iterations = 100000;
+  const iterations = 1000000;
   let penetrated = 0;
 
   const strongDice = ["강공", "강공", "강공", "강공", "빈 강공", "빈 약공", "눈", "번개"];
@@ -179,7 +204,7 @@ function simulate(opts) {
 
       if (opts.stanceDefense && face === "빈 쌍 방어") face = "쌍 방어";
       if (face === "번개" && opts.boltToBlock) face = "방어";
-      //if (face === "눈" && opts.eyeToDodge) face = "회피";
+      if (face === "눈" && opts.eyeToDodge) face = "회피";
 
       if (face === "방어") defBlocks.push("방어");
       if (face === "회피") defBlocks.push("회피");
