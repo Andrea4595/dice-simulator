@@ -1,32 +1,42 @@
 
+* {
+  box-sizing: border-box;
+}
 body {
   background-color: #1a1a1a;
   color: white;
   font-family: sans-serif;
-  padding: 20px;
+  padding: 12px;
   margin: 0;
 }
 header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 h1#resultText {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   color: #0af;
+  word-break: keep-all;
 }
 main {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
+}
+section {
+  margin-bottom: 20px;
+}
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
 }
 .dice-row {
   display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  gap: 6px;
 }
 .dice {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background-size: cover;
   border-radius: 6px;
   cursor: pointer;
@@ -35,13 +45,16 @@ main {
   background: #444;
   color: white;
   border: none;
-  padding: 8px 12px;
-  margin: 4px;
+  padding: 10px 12px;
+  margin: 4px 4px 8px 0;
   border-radius: 6px;
+  font-size: 0.9rem;
 }
 .toggle-btn.active {
   background: #0a84ff;
 }
 .toggle-group {
-  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
