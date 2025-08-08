@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function simulate() {
     let hit = 0;
-    const trials = 100000;
+    const trials = 10000;
 
     for (let t = 0; t < trials; t++) {
       let attacks = [];
