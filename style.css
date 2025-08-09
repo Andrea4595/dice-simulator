@@ -47,14 +47,20 @@ h2 {
   cursor: pointer;
   touch-action: none;
 }
+#attackOptions, #defenceOptions{
+  display: flex;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
 .toggle-btn {
   background: #444;
   color: white;
   border: none;
   padding: 10px 12px;
-  margin: 4px 4px 8px 0;
+  margin: 4px 0px 0px 0;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 1.2em;
 }
 .toggle-btn.active {
   background: #0a84ff;
@@ -68,5 +74,8 @@ h2 {
 @media (max-width: 480px) {
   h1#resultText {
     font-size: 2rem;
+  }
+  #attackOptions, #defenseOptions {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
