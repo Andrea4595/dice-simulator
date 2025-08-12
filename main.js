@@ -94,36 +94,38 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (r === "번개" && state.boltToStrong) r = "강공";
         else if (r === "눈" && state.eyeToStrong) r = "강공";
         else if (r === "눈" && state.eyeToWeak) r = "약공";
-          if (r === "강공" || r === "약공") attacks.push(r);
-          if (r === "쌍 약공") {
-              attacks.push("약공");
-              attacks.push("약공");
-          }
+        if (r === "강공" || r === "약공") attacks.push(r);
       }
 
       for (let i = 0; i < state.weak; i++) {
         let r = roll("weak");
-        if (r === "번개" && state.boltToStrong) r = "강공";
+        if (r === "빈 약공" && state.stanceAttack) r = "약공";
+        else if (r === "번개" && state.boltToStrong) r = "강공";
         else if (r === "눈" && state.eyeToStrong) r = "강공";
-          else if (r === "눈" && state.eyeToWeak) r = "약공";
-          if (r === "강공" || r === "약공") attacks.push(r);
-          if (r === "쌍 약공") {
-              attacks.push("약공");
-              attacks.push("약공");
-          }
+        else if (r === "눈" && state.eyeToWeak) r = "약공";
+        if (r === "강공" || r === "약공") attacks.push(r);
+        else if (r === "쌍 약공") {
+          attacks.push("약공");
+          attacks.push("약공");
+        }
       }
+      
+      attacks.sort(function compare(a, b) {
+        if (a === "강공" && b === "약공") return -1;
+        if (a === "약공" && b === "강공") return 1;
+        return 0;
+      });
 
       let blocks = [];
       for (let i = 0; i < state.block; i++) {
         let r = roll("block");
         if (r === "빈 쌍 방어" && state.stanceDefense) r = "쌍 방어";
-          else if (r === "번개" && state.boltToBlock) r = "방어";
-          if (r === "방어") blocks.push(r);
-          if (r === "쌍 방어") {
-              blocks.push("방어");
-              blocks.push("방어");
-          }
-          if (r === "회피") blocks.push(r);
+        else if (r === "번개" && state.boltToBlock) r = "방어";
+        if (r === "방어" || r === "회피") blocks.push(r);
+        if (r === "쌍 방어") {
+          blocks.push("방어");
+          blocks.push("방어");
+        }
       }
 
       for (let i = 0; i < state.dodge; i++) {
