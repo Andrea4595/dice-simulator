@@ -79,60 +79,126 @@ document.addEventListener("DOMContentLoaded", () => {
     const faces = rolls[die];
     return faces[Math.floor(Math.random() * faces.length)];
   }
-
-  function simulate() {
-    let hit = 0;
-    const trials = 10000;
-
-    for (let t = 0; t < trials; t++) {
-      let attacks = [];
-
-      for (let i = 0; i < state.strong; i++) {
+  
+  function strongRoll(count, reroll)
+  {
+	  let results = [];
+	  let rerollCount = 0;
+	  
+      for (let i = 0; i < count; i++) {
         let r = roll("strong");
         if (r === "빈 강공" && state.stanceAttack) r = "강공";
         else if (r === "빈 약공" && state.stanceAttack) r = "약공";
         else if (r === "번개" && state.boltToStrong) r = "강공";
         else if (r === "눈" && state.eyeToStrong) r = "강공";
         else if (r === "눈" && state.eyeToWeak) r = "약공";
-        if (r === "강공" || r === "약공") attacks.push(r);
+        if (r === "강공") results.push(r);
+		if (r === "약공")
+		{
+			if (state.stanceDefense && reroll) rerollCount++;
+			else results.push(r);
+		}
+		if (r === "빈 강공" || r === "빈 약공" || r === "번개" || r === "눈")
+			rerollCount++;
       }
-
-      for (let i = 0; i < state.weak; i++) {
+	  
+	  if (reroll)
+		  results.push(...strongRoll(rerollCount, false));
+	  
+      results.sort(function compare(a, b) {
+        if (a === "강공" && b === "약공") return -1;
+        if (a === "약공" && b === "강공") return 1;
+        return 0;
+      });
+	  
+	  return results;
+  }
+  
+  function weakRoll(count, reroll)
+  {
+	  let results = [];
+	  let rerollCount = 0;
+	  
+      for (let i = 0; i < count; i++) {
         let r = roll("weak");
         if (r === "빈 약공" && state.stanceAttack) r = "약공";
         else if (r === "번개" && state.boltToStrong) r = "강공";
         else if (r === "눈" && state.eyeToStrong) r = "강공";
         else if (r === "눈" && state.eyeToWeak) r = "약공";
-        if (r === "강공" || r === "약공") attacks.push(r);
+        if (r === "강공") results.push(r);
+        if (r === "약공") results.push("약공");
         else if (r === "쌍 약공") {
-          attacks.push("약공");
-          attacks.push("약공");
+          results.push("약공");
+          results.push("약공");
         }
+		if (r === "빈 약공" || r === "번개" || r === "눈" || r === "")
+			rerollCount++;
       }
-      
-      attacks.sort(function compare(a, b) {
-        if (a === "강공" && b === "약공") return -1;
-        if (a === "약공" && b === "강공") return 1;
-        return 0;
-      });
-
-      let blocks = [];
-      for (let i = 0; i < state.block; i++) {
+	  
+	  if (reroll)
+		  results.push(...weakRoll(rerollCount, false));
+	  
+	  return results;
+  }
+  
+  function blockRoll(count, reroll)
+  {
+	  let results = [];
+	  let rerollCount = 0;
+	  
+      for (let i = 0; i < count; i++) {
         let r = roll("block");
         if (r === "빈 쌍 방어" && state.stanceDefense) r = "쌍 방어";
         else if (r === "번개" && state.boltToBlock) r = "방어";
-        if (r === "방어" || r === "회피") blocks.push(r);
+        if (r === "방어" || r === "회피") results.push(r);
         if (r === "쌍 방어") {
-          blocks.push("방어");
-          blocks.push("방어");
+          results.push("방어");
+          results.push("방어");
         }
+		if (r === "빈 쌍 방어" || r === "번개" || r === "눈" || r === "")
+			rerollCount++;
       }
-
-      for (let i = 0; i < state.dodge; i++) {
+	  
+	  if (reroll)
+		  results.push(...blockRoll(rerollCount, false));
+	  
+	  return results;
+  }
+  
+  function dodgeRoll(count, reroll)
+  {
+	  let results = [];
+	  let rerollCount = 0;
+	  
+      for (let i = 0; i < count; i++) {
         let r = roll("dodge");
         if (r === "눈" && state.eyeToDodge) r = "회피";
-        if (r === "회피") blocks.push(r);
+        if (r === "회피") results.push(r);
+		if (r === "번개" || r === "눈" || r === "")
+			rerollCount++;
       }
+	  
+	  if (reroll)
+		  results.push(...dodgeRoll(rerollCount, false));
+	  
+	  return results;
+  }
+
+  function simulate() {
+    let hit = 0;
+    const trials = 10000;
+
+    for (let t = 0; t < trials; t++) {
+		let attacks = [
+		  ...strongRoll(state.strong, state.atkReroll),
+		  ...weakRoll(state.weak, state.atkReroll)
+		];
+
+		let blocks = [
+		  ...blockRoll(state.block, state.defReroll),
+		  ...dodgeRoll(state.dodge, state.defReroll)
+		];
+
 
       let blocked = 0;
       attacks.forEach(atk => {
