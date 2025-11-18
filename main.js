@@ -149,7 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 0; i < count; i++) {
         let r = roll("block");
         if (r === "빈 쌍 방어" && state.stanceDefense) r = "쌍 방어";
-        else if (r === "번개" && state.boltToBlock) r = "방어";
+        if (r === "번개" && state.boltToBlock) r = "방어";
+        if (r === "눈" && state.eyeToDodge) r = "회피";
         if (r === "방어" || r === "회피") results.push(r);
         if (r === "쌍 방어") {
           results.push("방어");
